@@ -1,0 +1,201 @@
+<h2>Filter</h2>
+<div class="space-bottom">
+    <mat-button-toggle-group [(ngModel)]="crFilter" (change)="updateCreatureList()">
+        <mat-button-toggle value="none">none</mat-button-toggle>
+        <mat-button-toggle value="0.25">1/4</mat-button-toggle>
+        <mat-button-toggle value="0.5">1/2</mat-button-toggle>
+        <mat-button-toggle value="1">1</mat-button-toggle>
+        <mat-button-toggle value="2">2</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
+<div class="space-bottom">
+    <mat-button-toggle-group [(ngModel)]="sizeFilter" (change)="updateCreatureList()">
+        <mat-button-toggle value="none">none</mat-button-toggle>
+        <mat-button-toggle value="tiny">tiny</mat-button-toggle>
+        <mat-button-toggle value="small">small</mat-button-toggle>
+        <mat-button-toggle value="medium">medium</mat-button-toggle>
+        <mat-button-toggle value="large">large</mat-button-toggle>
+        <mat-button-toggle value="huge">huge</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
+<div class="space-bottom">
+    <mat-button-toggle-group [(ngModel)]="statusFilter" (change)="updateCreatureList()">
+        <mat-button-toggle value="none">none</mat-button-toggle>
+        <mat-button-toggle value="knocked prone">knocked prone</mat-button-toggle>
+        <mat-button-toggle value="grappled">grappled</mat-button-toggle>
+        <mat-button-toggle value="restrained">restrained</mat-button-toggle>
+        <mat-button-toggle value="blinded">blinded</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
+
+<div class="space-bottom">
+    <h2>Creatures</h2>
+    <mat-accordion>
+        <mat-expansion-panel *ngFor="let creature of selectableCreatures; index as idx;"
+            [ngClass]="{'active': creature.name == creatures[0].name}">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <img *ngIf="creature.image" [src]="creature.image"
+                        style="max-width: 48px; max-height: 48px; margin-right: 0.5rem;">
+                    {{creature.name}} ({{creature.size}})
+                </mat-panel-title>
+                <mat-panel-description>
+                    <span class="material-symbols-outlined">Bolt</span>{{creature.cr}}
+                    <span class="material-symbols-outlined">Favorite</span>{{creature.maxHitPoints}}
+                    <span class="material-symbols-outlined">Shield</span>{{creature.ac}}
+                    <span class="material-symbols-outlined">Barefoot</span>{{creature.speed}}
+                    <ng-container *ngFor="let action of creature.actions">
+                        <ng-container *ngIf="action.attacks as attacks">
+                            <span class="material-symbols-outlined">Swords</span>
+                            <ng-container *ngFor="let attack of attacks; index as atkIdx">{{creature.avgDamage(attack)}}
+                                (+{{attack.attackBonus}}) </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </mat-panel-description>
+                <button mat-button color="primary" *ngIf="creature.name != creatures[0].name"
+                    (click)="selectCreature(creature)">Select</button>
+            </mat-expansion-panel-header>
+            <div *ngFor="let action of creature.actions">
+                <b>{{action.name}}.</b>
+                {{action.description}}
+                <ul>
+                    <li *ngFor="let attack of action.attacks">
+                        +{{attack.attackBonus}} to hit, Hit: {{creature.avgDamage(attack)}}
+                        <ng-container *ngFor="let dmg of attack.damage">
+                            ({{dmg.numDice}}d{{dmg.dice}} + {{dmg.bonus}})
+                        </ng-container>
+                    </li>
+                </ul>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
+</div>
+
+<div>
+    <mat-form-field class="medium" appearance="fill">
+        <mat-label>Creatures</mat-label>
+        <input type="number" min="1" matInput [(ngModel)]="numDice" (change)="updateCreatures()">
+    </mat-form-field>
+    <button mat-icon-button (click)="numDice = numDice - 1; updateCreatures()">
+        <span class="material-symbols-outlined mini red">Remove</span>
+    </button>
+    <button mat-icon-button (click)="numDice = numDice + 1; updateCreatures()">
+        <span class="material-symbols-outlined mini green">Add</span>
+    </button>
+</div>
+
+<div>
+    <mat-form-field class="medium" appearance="fill">
+        <mat-label>AC</mat-label>
+        <input type="number" matInput [(ngModel)]="ac" (change)="update()">
+    </mat-form-field>
+    <button mat-icon-button (click)="ac = ac - 1; update()">
+        <span class="material-symbols-outlined mini red">Remove</span>
+    </button>
+    <button mat-icon-button (click)="ac = ac + 1; update()">
+        <span class="material-symbols-outlined mini green">Add</span>
+    </button>
+</div>
+
+<div class="space-bottom">
+    <mat-button-toggle-group>
+        <ng-container *ngFor="let action of creatures[0].actions; index as idx">
+            <mat-button-toggle *ngIf="action.attacks" [checked]="currentActionIdx == idx"
+                (click)="currentActionIdx = idx">{{action.name}}</mat-button-toggle>
+        </ng-container>
+    </mat-button-toggle-group>
+
+    <button mat-fab color="primary" (click)="roll()" style="margin-left: 1rem;">
+        <span class="material-symbols-outlined">Casino</span>
+    </button>
+</div>
+
+<div class="space-bottom">
+    <mat-button-toggle-group [(ngModel)]="attackModifier">
+        <mat-button-toggle value="disadvantage">disadvantage</mat-button-toggle>
+        <mat-button-toggle value="normal">normal</mat-button-toggle>
+        <mat-button-toggle value="advantage">advantage</mat-button-toggle>
+    </mat-button-toggle-group>
+</div>
+
+<mat-grid-list id="creature-list" class="space-bottom" [cols]="creatures.length" rowHeight="50px"
+    [style.width]="creatures.length*100+'px'">
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        {{creature.name}}
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        <img *ngIf="creature.image" [src]="creature.image" style="max-width: 90%; max-height: 90%;">
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        <button mat-mini-fab color="primary" (click)="rollCreature(creature)">
+            <span class="material-symbols-outlined">Casino</span>
+        </button>
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        {{creature.currentHitPoints}} / {{creature.maxHitPoints}}
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        <button mat-icon-button (click)="addHitPoints(creature, -1)">
+            <span class="material-symbols-outlined mini red">Remove</span>
+        </button>
+        <button mat-icon-button (click)="addHitPoints(creature, 1)">
+            <span class="material-symbols-outlined mini green">Add</span>
+        </button>
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        <mat-chip-list aria-label="Hit Rolls" *ngIf="creature.attackRolls as attackRolls">
+            <ng-container *ngFor="let attackRoll of attackRolls; index as idx">
+                <mat-chip [style.color]="attackRoll.color.color" [style.background-color]="attackRoll.color.background"
+                    [matTooltip]="attackRoll.dice + ' + ' + creature.actions[currentActionIdx].attacks![idx].attackBonus"
+                    matTooltipTouchGestures="auto">
+                    {{attackRoll.dice + creature.actions[currentActionIdx].attacks![idx].attackBonus}}
+                </mat-chip>
+            </ng-container>
+        </mat-chip-list>
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" *ngFor="let creature of creatures">
+        <mat-chip-list *ngIf="creature.damageRolls" aria-label="Damage Rolls">
+            <mat-chip *ngFor="let dmg of getDamage(creature); index as idx"
+                [matTooltip]="getDamageTooltip(creature, idx)" matTooltipTouchGestures="auto">
+                {{dmg}}
+            </mat-chip>
+        </mat-chip-list>
+    </mat-grid-tile>
+</mat-grid-list>
+
+<mat-grid-list class="space-bottom" cols="12" [style.width]="max(creatures.length, 4)*100+'px'" rowHeight="50px">
+    <!-- result -->
+    <mat-grid-tile colspan="6">
+        Hits {{totalHits()}}
+    </mat-grid-tile>
+    <mat-grid-tile colspan="6">
+        Damage {{totalDamage()}}
+    </mat-grid-tile>
+    <!-- HP -->
+    <mat-grid-tile colspan="12">
+        Damage / Heal
+        <button mat-icon-button (click)="addHitPointsAll(-allHpChange)">
+            <span class="material-symbols-outlined mini red">Remove</span>
+        </button>
+        <mat-form-field class="small">
+            <input type="number" matInput [(ngModel)]="allHpChange" (change)="updateCreatures()">
+        </mat-form-field>
+        <button mat-icon-button (click)="addHitPointsAll(allHpChange)">
+            <span class="material-symbols-outlined mini green">Add</span>
+        </button>
+    </mat-grid-tile>
+</mat-grid-list>
+
+<section class="space-bottom">
+    <h2>Features & Traits</h2>
+    <p>
+        <mat-checkbox [checked]="mighySummoner" (click)="setting('mighySummoner')">Mighty Summoner (Druid 6)
+        </mat-checkbox>
+    </p>
+</section>

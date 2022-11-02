@@ -1,0 +1,60 @@
+app-conjure-animals {
+    .space-bottom {
+        margin-bottom: 1rem;
+    }
+
+    mat-panel-description {
+        span.material-symbols-outlined {
+            margin-left: 0.5rem;
+        }
+    }
+
+    mat-form-field {
+        &.small {
+            width: 50px;
+            text-align: center;
+        }
+        &.medium {
+            width: 100px;
+        }
+    }
+
+    mat-expansion-panel {
+        &.active {
+            background-color: rgba(21, 131, 47, 0.1);
+        }
+    }
+
+    mat-grid-tile {
+        background-color: #eff9ee;
+
+        &.content-left {
+            .mat-grid-tile-content {
+                justify-content: left;
+                margin: 0 10px;
+            }
+        }
+
+        &.multirow {
+            .mat-grid-tile-content {
+                display: block;
+                margin: 0 auto;
+                width: 75px;
+            }
+        }
+    }
+
+    button {
+        .mini {
+            font-size: 20px;
+
+            &.green {
+                color: green;
+            }
+
+            &.red {
+                color: red;
+            }
+        }
+    }
+}
